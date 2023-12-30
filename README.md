@@ -52,7 +52,7 @@ qnetwork-{n_episodes}-{timestamp}.pth
 ## Monitoring
 Reward and loss plots can be found in the `artefacts/` directory.
 
-Real-time monitoring of the training can be done with Tensorboard by launching the command using `ctrl` + `shift` + `p` and typing "Launc Tensorboard" for VScode.
+Real-time monitoring of the training can be done with Tensorboard by launching the command using `ctrl` + `shift` + `p` and typing "Launch Tensorboard" for VScode.
 
 
 ## Evaluation
