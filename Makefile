@@ -1,20 +1,23 @@
+VENV = .rlvenv
+PYTHON = $(VENV)/local/bin/python
+PIP = $(VENV)/local/bin/pip
+
 install:
-	pip install --upgrade pip
-	pip install -r requirements.txt
+	$(PIP) install --upgrade pip
+	$(PIP) install -r requirements.txt
 
 clean:
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
-	rm -r .pytest_cache
+	find . -type d -name "__pycache__" -exec rm -r {} +
 
 lint:
-	pylint --disable=R,C *.py
+	$(PYTHON) -m pylint --disable=R,C *.py
 
 format:
-	black .
+	$(PYTHON) -m black .
 
 train:
-	python train.py
+	$(PYTHON) train.py
 
 evaluate:
-	python eval.py
+	$(PYTHON) eval.py
+

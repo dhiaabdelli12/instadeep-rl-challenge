@@ -1,0 +1,17 @@
+agent:
+  epsilon_start: 1.0
+  epsilon_end: .05
+  epsilon_decay: 0.0005
+  alpha: 0.001
+  gamma: 0.99
+  mem_size: 1000000
+  batch_size: 64
+
+training:
+  eval_interval: 1
+  plot_interval: 100
+  n_episodes: 700
+  checkpoint_interval: 100
+
+evaluation:
+  n_episodes: 20
