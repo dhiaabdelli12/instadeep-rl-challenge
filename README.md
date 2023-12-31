@@ -1,5 +1,7 @@
 # instadeep-rl-challenge
 This is my submission for the instadeep RL challenge in the second phase of the recruitement process.
+![Lunar-Landing GIF after training agent using DQN](./artefacts/successful_landing.gif)
+*Ship landing after being trained with DQN for 700 episodes*
 
 ## Reinforcement learnig framework
 The Lunar Landing problem is formulated as a reinforcement learning task, where an agent learns to control the descent of a lunar lander to safely land on the moon's surface. The agent interacts with the environment, comprising different states, takes actions to adjust its orientation and thrust, and receives rewards based on the success or failure of the landing.
@@ -11,7 +13,7 @@ The Lunar Landing problem is formulated as a reinforcement learning task, where 
 The training process involves interacting with the environment, storing experiences in the replay buffer, and updating the Q-network parameters based on sampled batches. By the 200th episode, the model begins to converge and achieves a cumulative reward of 200, indicating successful learning.
 
 ### QNetwork
-![Alt text](./artefacts/qnetwork.png)
+![QNetwork Architecture](./artefacts/qnetwork.png)
 A neural network was used for the action-value function approximation
 
 - Takes the agent's state as input with a size equal to the observation space dimension (8).
@@ -25,7 +27,7 @@ A neural network was used for the action-value function approximation
 
 ### Performance
 
-![Alt text](./artefacts/rewards_plot.png)
+![Reward plot after 700 episodes](./artefacts/rewards_plot_final.png)
 
 ## Configuration
 

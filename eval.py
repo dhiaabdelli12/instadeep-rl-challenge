@@ -12,6 +12,7 @@ checkpoint_path = checkpoint_selection(path)
 agent_params, _, eval_params = load_hyperparamters("config.yml")
 logger = init_logger("Evaluation")
 
+
 if __name__ == "__main__":
     env = gym.make("LunarLander-v2", render_mode="human")
     agent = DQNAgent(env=env, checkpoint_path=checkpoint_path, **agent_params)
@@ -21,7 +22,7 @@ if __name__ == "__main__":
         DONE = False
 
         while not DONE:
-            action = env.action_space.sample()
+            action = agent.act(state)
             n_state, reward, DONE, _, _ = env.step(action)
             SCORE += reward
             state = n_state
