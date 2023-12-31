@@ -32,7 +32,7 @@ A neural network was used for the action-value function approximation
 #### Virtual environment setup
 First, create a virutal environment. Make sure the `virtualenv` package is installed
 ```SHELL
-python -m virtual .rlvenv
+python -m virtualenv .rlvenv
 ```
 Then, activate the virtual environment
 ```SHELL
