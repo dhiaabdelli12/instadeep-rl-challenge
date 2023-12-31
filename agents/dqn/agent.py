@@ -35,7 +35,7 @@ class DQNAgent:
         self.s_dim = env.observation_space.shape[0]
         self.a_dim = env.action_space.n
         if checkpoint_path:
-            self.qnetwork = torch.load(checkpoint_path)
+            self.qnetwork = torch.load(checkpoint_path, map_location=self.device)
             self.epsilon = self.epsilon_end
             if verbose:
                 logger.info("Loaded QNetwork from checkpoint: %s", checkpoint_path)

@@ -75,7 +75,7 @@ def capture_metrics(
     loss: float,
     eps_history: list,
     epsilon: float,
-) -> tuple[list, list, list]:
+):
     """Stores loss, reward and epsilon along the run.
 
     Parameters
@@ -108,7 +108,7 @@ def capture_metrics(
     return (rewards, losses, eps_history)
 
 
-def load_hyperparamters(yaml_file: str) -> tuple[dict, dict, dict]:
+def load_hyperparamters(yaml_file: str):
     """Loads the hyperparameters from the YAML file.
 
     Parameters
