@@ -1,6 +1,7 @@
 """
 DQNAgent implementation module.
 """
+import logging
 from typing import Optional
 from gym.wrappers.time_limit import TimeLimit
 import numpy as np
@@ -8,12 +9,19 @@ import torch
 from torch import optim
 from agents.dqn.qnetwork import QNetwork
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 class DQNAgent:
     """DQNAgent class for implementing a Deep Q-Learning agent."""
 
     def __init__(
-        self, env: TimeLimit, checkpoint_path: Optional[str] = None, **kwargs
+        self,
+        env: TimeLimit,
+        verbose=True,
+        checkpoint_path: Optional[str] = None,
+        **kwargs,
     ) -> None:
         """DQNAgent class constructor.
 
@@ -29,6 +37,9 @@ class DQNAgent:
         if checkpoint_path:
             self.qnetwork = torch.load(checkpoint_path)
             self.epsilon = self.epsilon_end
+            if verbose:
+                logger.info("Loaded QNetwork from checkpoint: %s", checkpoint_path)
+                logger.info(self.__str__)
         else:
             self.qnetwork = QNetwork(self.s_dim, self.a_dim, self.device)
             self.epsilon = self.epsilon_start
@@ -41,6 +52,8 @@ class DQNAgent:
         self.action_memory = np.zeros(self.mem_size, dtype=np.int32)
         self.reward_memory = np.zeros(self.mem_size, dtype=np.float32)
         self.terminal_memory = np.zeros(self.mem_size, dtype=np.bool_)
+        if verbose:
+            logger.info("DQNAgent initialized.")
 
     def _update_epsilon(self):
         """Updates the exploration-exploitation parameter epsilon."""

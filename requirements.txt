@@ -9,3 +9,4 @@ ray[tune]
 dm_tree==0.1.8
 pyaml==23.12.0
 tensorboard==2.15.1
+pick==2.2.0
