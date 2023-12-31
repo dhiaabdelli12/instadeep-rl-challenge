@@ -1,6 +1,15 @@
 VENV = .rlvenv
-PYTHON = $(VENV)/local/bin/python
-PIP = $(VENV)/local/bin/pip
+IN_DOCKER = 0
+
+ifdef IN_DOCKER
+PYTHON = python
+PIP = pip
+else
+PYTHON = .rlvenv/local/bin/python
+PIP = .rlvenv/local/bin/pip
+endif
+
+DOCKER_IMG_NAME = instadeep-rl
 
 install:
 	$(PIP) install --upgrade pip
@@ -20,4 +29,11 @@ train:
 
 evaluate:
 	$(PYTHON) eval.py
+
+build:
+	docker build -t $(DOCKER_IMG_NAME) .
+
+run:
+	$(eval IN_DOCKER=1)
+	docker run -it -v $(PWD)/checkpoints:/app/checkpoints -e $(DOCKER_IMG_NAME) /bin/bash
 

@@ -1,12 +1,12 @@
 pylint==2.17.5
 black==23.9.1
 gymnasium==0.29.1
-swig==4.1.1.post1
+swig==4.1.1
 gymnasium[box2d]
 torch==2.1.0
 ray[llib]==2.9.0
 ray[tune]
 dm_tree==0.1.8
 pyaml==23.12.0
-tensorboard==2.15.1
+tensorboard
 pick==2.2.0
