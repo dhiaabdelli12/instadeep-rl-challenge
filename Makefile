@@ -34,6 +34,9 @@ train:
 evaluate:
 	$(PYTHON) eval.py
 
+analysis:
+	$(PYTHON) analysis.py
+
 build:
 	docker build -t $(DOCKER_IMG_NAME) .
 

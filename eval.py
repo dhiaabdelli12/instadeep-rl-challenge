@@ -7,9 +7,11 @@ from utils import load_hyperparamters, init_logger, checkpoint_selection
 from agents.dqn.agent import DQNAgent
 
 
-path = os.path.join("checkpoints", "qnetwork")
+path = os.path.join("checkpoints", "dqn")
 checkpoint_path = checkpoint_selection(path)
-agent_params, _, eval_params = load_hyperparamters("config.yml")
+agent_params, eval_params = load_hyperparamters(
+    "config.yml", module=["agent", "evaluation"]
+)
 logger = init_logger("Evaluation")
 
 
@@ -20,7 +22,6 @@ if __name__ == "__main__":
         SCORE = 0
         state, _ = env.reset()
         DONE = False
-
         while not DONE:
             action = agent.act(state)
             n_state, reward, DONE, _, _ = env.step(action)
