@@ -14,7 +14,7 @@ The Lunar Landing problem is formulated as a reinforcement learning task, where 
 The training process involves interacting with the environment, storing experiences in the replay buffer, and updating the Q-network parameters based on sampled batches. By the 200th episode, the model begins to converge and achieves a cumulative reward of 200, indicating successful learning.
 
 ### QNetwork
-![QNetwork Architecture](./artefacts/qnetwork.png)
+
 A neural network was used for the action-value function approximation
 
 - Takes the agent's state as input with a size equal to the observation space dimension (8).
