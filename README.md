@@ -1,6 +1,7 @@
 # instadeep-rl-challenge
 This is my submission for the instadeep RL challenge in the second phase of the recruitement process.
 ![Lunar-Landing GIF after training agent using DQN](./artefacts/successful_landing.gif)
+
 *Ship landing after being trained with DQN for 700 episodes*
 
 ## Reinforcement learnig framework
