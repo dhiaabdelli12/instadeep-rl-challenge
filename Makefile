@@ -29,10 +29,10 @@ format:
 	$(PYTHON) -m black .
 
 train:
-	$(PYTHON) train.py
+	$(PYTHON) train.py $(AGENT)
 
 evaluate:
-	$(PYTHON) eval.py
+	$(PYTHON) eval.py $(AGENT)
 
 analysis:
 	$(PYTHON) analysis.py

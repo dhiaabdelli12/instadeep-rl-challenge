@@ -6,12 +6,13 @@ agent:
   gamma: 0.99
   mem_size: 1000000
   batch_size: 64
+  replace_target_cnt: 1000
 
 training:
   log_interval: 1
   n_episodes: 700
   checkpoint_interval: 100
-  max_steps_per_episode: 300
+  max_steps_per_episode: 1200
 
 evaluation:
   n_episodes: 20

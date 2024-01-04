@@ -1,6 +1,7 @@
 """
 DQNAgent implementation module.
 """
+import os
 import logging
 from typing import Optional
 from gym.wrappers.time_limit import TimeLimit
@@ -8,6 +9,8 @@ import numpy as np
 import torch
 from torch import optim
 from agents.dqn.qnetwork import QNetwork
+from datetime import datetime
+from pathlib import Path
 
 
 logging.basicConfig(level=logging.INFO)
@@ -15,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 class ReplayBuffer:
-    """Implementaion of the replay buffer.
-    """
+    """Implementaion of the replay buffer for the experience replay."""
+
     def __init__(self, capacity: int, state_dim: int, device: str):
         """Replay Buffer class constructor.
 
@@ -51,7 +54,7 @@ class ReplayBuffer:
         action: int,
         reward: float,
         next_state: np.ndarray,
-        done: np.bool,
+        done: np.bool_,
     ):
         """Stores a transition in the replay buffer.
 
@@ -138,22 +141,27 @@ class DQNAgent:
         self.s_dim = env.observation_space.shape[0]
         self.a_dim = env.action_space.n
         self.replay_buffer = ReplayBuffer(self.mem_size, self.s_dim, self.device)
+        self.learn_step_cnt = 0
+        self.checkpoint_path = checkpoint_path
+        self.verbose = verbose
 
         if checkpoint_path:
-            self.checkpoint_name = checkpoint_path.split("/")[-2]
-            self.qnetwork = torch.load(checkpoint_path, map_location=self.device)
-            self.epsilon = self.epsilon_end
-            if verbose:
-                logger.info("Loaded QNetwork from checkpoint: %s", checkpoint_path)
-                logger.info(self.__str__())
+            self._load_checkpoint(checkpoint_path)
         else:
             self.qnetwork = QNetwork(self.s_dim, self.a_dim, self.device)
             self.epsilon = self.epsilon_start
-
-        self.optimizer = optim.Adam(self.qnetwork.parameters(), lr=self.alpha)
+            self.optimizer = optim.Adam(self.qnetwork.parameters(), lr=self.alpha)
 
         if verbose:
-            logger.info("DQNAgent initialized.")
+            logger.info("Agent initialized.")
+
+    def _load_checkpoint(self, path):
+        self.checkpoint_name = path.split("/")[-2]
+        self.qnetwork = torch.load(f"{path}/qnetwork.pth", map_location=self.device)
+        self.epsilon = self.epsilon_end
+        if self.verbose:
+            logger.info("Loaded QNetwork from checkpoint: %s", path)
+            logger.info(self.__str__())
 
     def _update_epsilon(self):
         """Updates the exploration-exploitation parameter epsilon."""
@@ -211,6 +219,28 @@ class DQNAgent:
         self.qnetwork.loss = loss
         self.optimizer.step()
         self._update_epsilon()
+
+    def save_checkpoint(self, iteration: int):
+        """Saves QNetwork checkpoint at a specific iteration.
+
+        Parameters
+        ----------
+        network : Agent
+            Agent in training.
+        iteration : int
+            Iteration number at each network weights will be saved.
+        """
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M")
+        chkpt_name = f"{iteration}_eps-{timestamp}"
+
+        root_directory = Path(__file__).parent.parent.parent
+        chkpt_dir_path = os.path.join(root_directory, "checkpoints", "dqn", chkpt_name)
+        print(chkpt_dir_path)
+        qnetwork_path = os.path.join(chkpt_dir_path, "qnetwork.pth")
+        os.makedirs(chkpt_dir_path, exist_ok=True)
+        torch.save(self.qnetwork, qnetwork_path)
+
+        return chkpt_dir_path
 
     def __str__(self) -> str:
         return f"""

@@ -11,7 +11,7 @@ from time import time
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from agents.dqn.agent import DQNAgent
+from agents.dqn.agent_ import DQNAgent
 from utils import load_hyperparamters, checkpoint_selection, init_logger
 
 warnings.simplefilter("ignore")

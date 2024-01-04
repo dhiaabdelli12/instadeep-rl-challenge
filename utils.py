@@ -14,7 +14,7 @@ from torch.utils.tensorboard.writer import SummaryWriter
 from agents.dqn.agent import DQNAgent
 
 
-def save_plots(chkpt_name: str, rewards: list, losses: list):
+def save_plots(chkpt_name: str, rewards: list, losses: list, fuel: list):
     """Save training artefacts: loss and reward line plots.
 
     Parameters
@@ -27,16 +27,23 @@ def save_plots(chkpt_name: str, rewards: list, losses: list):
         List of QNetwork losses over the entire run.
     """
     plt.plot(rewards, label="Rewards")
+    plt.plot(fuel, label="Fuel Consumption")
     plt.title("Episode Rewards")
     plt.xlabel("Episode")
     plt.ylabel("Reward")
 
-    z = np.polyfit(range(len(rewards)), rewards, 1)
-    p = np.poly1d(z)
-    plt.plot(range(len(rewards)), p(range(len(rewards))), "r--", label="Trendline")
+    z_reward = np.polyfit(range(len(rewards)), rewards, 1)
+    p_reward = np.poly1d(z_reward)
+    plt.plot(
+        range(len(rewards)), p_reward(range(len(rewards))), "r--", label="Trendline"
+    )
+
+    z_fuel = np.polyfit(range(len(fuel)), fuel, 1)
+    p_fuel = np.poly1d(z_fuel)
+    plt.plot(range(len(fuel)), p_fuel(range(len(fuel))), "g--", label="Trendline")
 
     plt.legend()
-    path = os.path.join("checkpoints", "dqn", chkpt_name, "rewards_plot.png")
+    path = os.path.join(chkpt_name, "rewards_plot.png")
     plt.savefig(path)
     plt.close()
 
@@ -50,12 +57,12 @@ def save_plots(chkpt_name: str, rewards: list, losses: list):
     plt.plot(range(len(losses)), p(range(len(losses))), "r--", label="Trendline")
 
     plt.legend()
-    path = os.path.join("checkpoints", "dqn", chkpt_name, "loss_plot.png")
-    plt.savefig("artefacts/loss_plot.png")
+    path = os.path.join(chkpt_name, "loss_plot.png")
+    plt.savefig(path)
     plt.close()
 
 
-def save_checkpoint(agent: DQNAgent, iteration: int):
+def save_checkpoint(agent, iteration: int):
     """Saves QNetwork checkpoint at a specific iteration.
 
     Parameters
@@ -67,11 +74,16 @@ def save_checkpoint(agent: DQNAgent, iteration: int):
     """
     timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M")
     chkpt_name = f"{iteration}_eps-{timestamp}"
-    chkpt_dir_path = os.path.join("checkpoints", "dqn", chkpt_name)
+    chkpt_dir_path = os.path.join("checkpoints", "ddqn", chkpt_name)
+
+    q_eval_path = os.path.join(chkpt_dir_path, "q_eval.pth")
+    q_next_path = os.path.join(chkpt_dir_path, "q_next.pth")
+
     os.makedirs(chkpt_dir_path, exist_ok=True)
-    output = os.path.join(chkpt_dir_path, "weights.pth")
-    torch.save(agent.qnetwork, output)
-    return output.split("/")[-2]
+
+    torch.save(agent.q_eval, q_eval_path)
+    torch.save(agent.q_next, q_next_path)
+    return chkpt_dir_path
 
 
 def capture_metrics(
@@ -107,8 +119,8 @@ def capture_metrics(
     tuple[list, list, list]
         updated rewards losses and epis_history lists.
     """
-    #writer.add_scalar("Reward", reward)
-    #writer.add_scalar("Loss", loss)
+    # writer.add_scalar("Reward", reward)
+    # writer.add_scalar("Loss", loss)
     rewards.append(reward)
     losses.append(loss)
     eps_history.append(epsilon)
@@ -175,4 +187,4 @@ def checkpoint_selection(checkpoint_path: str) -> str:
     title = "Please choose the QNetwrok checkpoint: "
     options = [op for op in os.listdir(checkpoint_path)]
     option, _ = pick(options, title, indicator=">>", default_index=0)
-    return os.path.join(checkpoint_path, option, "weights.pth")
+    return os.path.join(checkpoint_path, option)
