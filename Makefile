@@ -14,7 +14,7 @@ endif
 DOCKER_IMG_NAME = instadeep-rl
 
 install:
-	apt-get install -y swig
+	sudo apt-get install -y swig
 	$(PIP) install --upgrade pip
 	$(PIP) install $(TORCH)
 	$(PIP) install -r requirements.txt

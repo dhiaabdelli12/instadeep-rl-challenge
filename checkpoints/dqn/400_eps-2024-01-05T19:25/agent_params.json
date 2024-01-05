@@ -1,0 +1,12 @@
+{
+    "epsilon_start": 1.0,
+    "epsilon_end": 0.05,
+    "epsilon_decay": 0.0005,
+    "alpha": 0.005,
+    "gamma": 0.99,
+    "mem_size": 1000000,
+    "batch_size": 64,
+    "replace_target_cnt": 1000,
+    "device": "cuda",
+    "tau": 0.001
+}

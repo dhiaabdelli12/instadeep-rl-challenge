@@ -1,86 +1,110 @@
-import logging
-import os
-from datetime import datetime
-from pathlib import Path
-from gym.wrappers.time_limit import TimeLimit
-import numpy as np
+"""
+Implementation of the Double Deep Q-learning agent.
+"""
 import torch
-from torch import optim
-from agents.ddqn.networks import QNetwork
-from agents.dqn.agent import DQNAgent
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import gym
+import numpy as np
+from agents.ddqn.network import QNetwork
+from agents.rlagent import RLAgent
 
 
-class DDQNAgent(DQNAgent):
+class DDQNAgent(RLAgent):
+    """
+    Implementation of the Double Deep Q-learning class.
+    """
+
     def __init__(
-        self, env: TimeLimit, verbose=True, checkpoint_path: str | None = None, **kwargs
+        self, name: str, env: gym.Env, chkpt_path: str | None = None, **kwargs
     ) -> None:
-        super().__init__(env, verbose, checkpoint_path, **kwargs)
-        self.learn_step_counter = 0
-        print(checkpoint_path)
-        if self.checkpoint_path:
-           self._load_checkpoint(self.checkpoint_path) 
-        else:
-            self.q_eval = QNetwork(self.s_dim, self.a_dim, self.device)
-            self.q_next = QNetwork(self.s_dim, self.a_dim, self.device)
+        """
+        Initialize the DDQNAgent.
+
+        Parameters
+        ----------
+        name : str
+            Name of the DDQNAgent.
+        env : gym.Env
+            Environment for the DDQNAgent.
+        chkpt_path : str or None, optional
+            Path to load checkpoint, by default None.
+        **kwargs
+            Additional parameters to be set as attributes of the DDQNAgent.
+        """
+        super().__init__(name, env, chkpt_path, **kwargs)
+        self.a_dim = self.env.action_space.n
+        if not chkpt_path:
+            self.networks = {
+                "q_eval": QNetwork(
+                    name="q_eval",
+                    lr=self.alpha,
+                    input_dim=self.s_dim,
+                    output_dim=self.a_dim,
+                    device=self.device,
+                ),
+                "q_next": QNetwork(
+                    name="q_next",
+                    lr=self.alpha,
+                    input_dim=self.s_dim,
+                    output_dim=self.a_dim,
+                    device=self.device,
+                ),
+            }
             self.epsilon = self.epsilon_start
+        self.logger = self._init_logger("DDQNAgent")
+        self.learn_step_counter = 0
 
-        self.q_eval_optimizer = optim.Adam(self.q_eval.parameters(), lr=self.alpha)
-        self.q_next_optimizer = optim.Adam(self.q_next.parameters(), lr=self.alpha)
-    
-    def _load_checkpoint(self, path):
-        q_eval_path = os.path.join(path, "q_eval.pth")
-        q_next_path = os.path.join(path, "q_next.pth")
-        
-        
-        self.q_eval = torch.load(q_eval_path, map_location=self.device)
-        self.q_next = torch.load(q_next_path, map_location=self.device)
-
-        self.q_eval.eval()
-        self.q_next.eval()
-        self.epsilon = self.epsilon_end
-        if self.verbose:
-            logger.info(
-                "Loaded QEval and QNext from checkpoint %s", path
+    def _update_epsilon(self):
+        """
+        Updates the exploration-exploitation parameter epsilon.
+        """
+        with torch.no_grad():
+            self.epsilon = (
+                self.epsilon - self.epsilon_decay
+                if self.epsilon > self.epsilon_end
+                else self.epsilon_end
             )
-            logger.info(self.__str__())
 
     def act(self, state: np.ndarray) -> np.ndarray:
-        """Chooses action based on epsilon-greedy policy.
+        """
+        Select an action using the epsilon-greedy strategy.
 
         Parameters
         ----------
         state : np.ndarray
-            The current state of the agent.
+            Current state.
 
         Returns
         -------
-        np.ndarray
-            The chosen action based on the policy.
+        int
+            Selected action.
         """
         if torch.rand(1) > self.epsilon:
-            state = torch.tensor(state, dtype=torch.float, device=self.q_eval.device)
-            output = self.q_eval.forward(state)
-            _, advantage = self.q_eval.forward(state)
+            state = torch.tensor(state, dtype=torch.float, device=self.device)
+            _, advantage = self.networks["q_eval"](state)
             action = torch.argmax(advantage).item()
             return action
         return np.random.choice(np.arange(self.a_dim, dtype=np.int32))
 
-    def replace_target_network(self):
+    def _replace_target_network(self):
+        """
+        Replaces the target Q-network with the evaluation Q-network periodically.
+        """
         if self.learn_step_counter % self.replace_target_cnt == 0:
-            self.q_next.load_state_dict(self.q_eval.state_dict())
+            self.networks["q_next"].load_state_dict(
+                self.networks["q_eval"].state_dict()
+            )
 
     def learn(self):
-        """Updates the network parameters based on sample batch from experience replay."""
+        """
+        Implements the learning algorithm for the DQNAgent.
+        """
         if self.replay_buffer.index < self.batch_size:
             return
 
-        self.q_eval_optimizer.zero_grad()
-        self.q_next_optimizer.zero_grad()
+        self.networks["q_eval"].optimizer.zero_grad()
+        self.networks["q_next"].optimizer.zero_grad()
 
-        self.replace_target_network()
+        self._replace_target_network()
 
         (
             state_batch,
@@ -91,10 +115,9 @@ class DDQNAgent(DQNAgent):
         ) = self.replay_buffer.sample_batch(self.batch_size)
         indices = np.arange(self.batch_size)
 
-        v, a = self.q_eval.forward(state_batch)
-        v_next, a_next = self.q_next.forward(new_state_batch)
-
-        v_eval, a_eval = self.q_eval.forward(new_state_batch)
+        v, a = self.networks["q_eval"].forward(state_batch)
+        v_next, a_next = self.networks["q_next"].forward(new_state_batch)
+        v_eval, a_eval = self.networks["q_eval"].forward(new_state_batch)
 
         q_pred = torch.add(v, (a - a.mean(dim=1, keepdim=True)))[indices, action_batch]
         q_next = torch.add(v_next, (a_next - a_next.mean(dim=1, keepdim=True)))
@@ -102,43 +125,21 @@ class DDQNAgent(DQNAgent):
 
         max_actions = torch.argmax(q_eval, dim=1)
         q_next[terminal_batch] = 0.0
-
         q_target = reward_batch + self.gamma * q_next[indices, max_actions]
 
-        loss = self.q_eval.loss_fn(q_target, q_pred).to(self.q_eval.device)
+        loss = self.networks["q_eval"].loss_fn(q_target, q_pred).to(self.device)
         loss.backward()
-        self.q_eval.loss = loss
-        self.q_eval_optimizer.step()
+        self.networks["q_eval"].loss = torch.Tensor.cpu(loss.detach()).numpy()
+        self.networks["q_eval"].optimizer.step()
         self.learn_step_counter += 1
         self._update_epsilon()
 
-    def save_checkpoint(self, iteration: int):
-        """Saves QNetwork checkpoint at a specific iteration.
-
-        Parameters
-        ----------
-        network : Agent
-            Agent in training.
-        iteration : int
-            Iteration number at each network weights will be saved.
-        """
-        timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M")
-        chkpt_name = f"{iteration}_eps-{timestamp}"
-
-        root_directory = Path(__file__).parent.parent.parent
-        chkpt_dir_path = os.path.join(root_directory, "checkpoints", "ddqn", chkpt_name)
-        os.makedirs(chkpt_dir_path, exist_ok=True)
-
-        q_eval_path = os.path.join(chkpt_dir_path, "q_eval.pth")
-        q_next_path = os.path.join(chkpt_dir_path, "q_next.pth")
-
-        torch.save(self.q_eval, q_eval_path)
-        torch.save(self.q_next, q_next_path)
-        return chkpt_dir_path
-
     def __str__(self) -> str:
+        """
+        String representation of the class.
+        """
         return f"""
-        DQNAgent params:
+        DDQNAgent params:
         \t epsilon: {self.epsilon}
         \t QEval Network: {self.q_eval}
         \t QNext Network: {self.q_next}
