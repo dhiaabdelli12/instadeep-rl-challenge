@@ -51,12 +51,14 @@ if __name__ == "__main__":
             action = agent.act(state)
             next_state, reward, done, _, _ = env.step(action)
 
-            if agent_choice in ["dqn", "ddqn"]:
-                reward *= training_params["fuel_penalty"]
-                if action in [1, 3]:
-                    fuel += 0.03
-                elif action == 2:
-                    fuel += 0.3
+            if training_params["fuel_penalty"] > 1:
+                if agent_choice in ["dqn", "ddqn"]:
+                    if action in [1, 3]:
+                        reward = -0.03 * training_params["fuel_penalty"]
+                        fuel += 0.03
+                    elif action == 2:
+                        reward = -0.3 * training_params["fuel_penalty"]
+                        fuel += 0.3
 
             cumulative_reward += reward
             agent.replay_buffer.store_transition(

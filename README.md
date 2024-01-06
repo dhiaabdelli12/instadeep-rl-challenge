@@ -81,8 +81,6 @@ qnetwork-{n_episodes}-{timestamp}.pth
 ## Monitoring
 Reward and loss plots can be found in the `chekpoints/` directory.
 
-Real-time monitoring of the training can be done with Tensorboard by launching the command using `ctrl` + `shift` + `p` and typing "Launch Tensorboard" for VScode.
-
 
 ## Evaluation
 After training, an agent checkpoint can be evaluated on the environment while it visually renders with the following command:

@@ -14,7 +14,7 @@ training:
   log_interval: 1
   n_episodes: 700
   checkpoint_interval: 100
-  max_steps_per_episode: 1200
+  max_steps_per_episode: 3000
   fuel_penalty: 1
 
 evaluation:

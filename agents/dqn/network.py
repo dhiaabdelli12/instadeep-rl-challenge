@@ -36,8 +36,8 @@ class QNetwork(RLNetwork):
             name=name,
             lr=lr,
             input_dim=input_dim,
-            fc1_dim=256,
-            fc2_dim=256,
+            fc1_dim=512,
+            fc2_dim=512,
             output_dim=output_dim,
             device=device,
         )
