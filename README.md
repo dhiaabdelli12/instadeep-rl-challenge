@@ -50,19 +50,28 @@ agent:
   epsilon_start: 1.0
   epsilon_end: .05
   epsilon_decay: 0.0005
-  alpha: 0.001
+  alpha: 0.005
   gamma: 0.99
   mem_size: 1000000
   batch_size: 64
+  replace_target_cnt: 1000
+  device: "cuda"
+  tau: 0.001
 
 training:
-  eval_interval: 1
-  plot_interval: 100
+  log_interval: 1
   n_episodes: 700
   checkpoint_interval: 100
+  max_steps_per_episode: 800
+  fuel_penalty: 4
 
 evaluation:
   n_episodes: 20
+
+analysis:
+  n_samples: 1000
+  test_size: .2
+
 ```
 The QNetwork checkpoints get saved periodically to `checkpoints/<model_name>` every `checkpoint_interval` number of iterations.
 The saved checkpoint has the following structure:
