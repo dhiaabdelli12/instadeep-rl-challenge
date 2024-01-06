@@ -103,5 +103,4 @@ To run an intepretation analysis on a checkpoint, use the following command:
 ```SHELL
 make analysis AGENT=<agent_name>
 ```
-
-
+This generates an `analysis.txt` in the checkpoint directory containing the decision tree rules.
