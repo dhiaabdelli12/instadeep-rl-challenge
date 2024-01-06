@@ -98,5 +98,10 @@ This will prompt with a menu of available checkpoints. A checkpoint can be selec
    qnetwork-100_eps-2023-12-31T12:46:38.pth
    qnetwork-300_eps-2023-12-31T12:47:32.pth
 ```
+## Analysis
+To run an intepretation analysis on a checkpoint, use the following command:
+```SHELL
+make analysis AGENT=<agent_name>
+```
 
 
